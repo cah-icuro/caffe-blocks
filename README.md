@@ -519,4 +519,12 @@ Test net output #0: accuracy = 0.821106
 
 Let's see how this compares with the naive classifier: Look for an "L" in the image, if found return 1 else return 0.
 
-TODO
+Results:
+```
+artemis@artemis-pc:~/Programming/caffe/blocks_test$ python naive_classify.py 
+Classifying images in data/val_imgs ...
+Accuracy: 0.561340332031
+Correct: 9197 / 16384
+```
+
+Wow, only 56% accuracy!  Did I do something wrong? TODO
