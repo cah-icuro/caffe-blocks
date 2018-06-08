@@ -707,7 +707,7 @@ solver_mode: GPU
 </p></details><br/>
 
 <details>
-  <summary>Accuracy: 0.86</summary><p>
+  <summary>Accuracy: 86.5%</summary><p>
   
 ```
 Iteration: 0
@@ -886,9 +886,9 @@ momentum: 0.9
 base_lr: 0.01
 lr_policy: "step"
 gamma: 0.1
-stepsize: 7000
-max_iter: 21000
-# Multiply lr by .1 every 7K steps
+stepsize: 10000
+max_iter: 30000
+# Multiply lr by .1 every stepsize steps
 
 # Output info
 display: 1000
@@ -902,7 +902,7 @@ solver_mode: GPU
 </p></details><br/>
 
 <details>
-  <summary>Accuracy: 0.86</summary><p>
+  <summary>Accuracy: 85.9%</summary><p>
   
 ```
 Iteration: 0
