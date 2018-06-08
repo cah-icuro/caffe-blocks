@@ -671,3 +671,393 @@ layer {
 We're applying a set of 16 1x1 convolutional filters to our input image right off the bat.  This means we're dropping 15/16 of the pixels right from the very beginning, and still the neural network got over 80% accuracy - this is pretty impressive actually.
 
 As a proof of concept, let's try to make the network make a little more sense given the objective (identifying noise images with the L shape), to see if we can beat the naive classifier benchmark.  We should start with some 3x3 convolutional filters, and zero-pad the image so we can detect the image on the corners.
+
+## Solving
+
+<details>
+  <summary>Adam Solver</summary><p>
+  
+```
+net: "prototxt/train_class_net.prototxt"
+
+# training data count = 2^16
+# test data count = 2^14
+# test batch size = 2^4
+# --> test_iter = 2^10, so we cover all test data per iteration
+test_iter: 1024
+test_interval: 1000
+
+# Solver method parameters
+type: "Adam"
+momentum: 0.9
+momentum2: 0.999
+base_lr: 0.001
+lr_policy: "fixed"
+
+# Output info
+display: 1000
+max_iter: 30000
+
+# snapshot intermediate results
+snapshot: 5000
+snapshot_prefix: "snapshots"
+
+solver_mode: GPU
+```
+</p></details><br/>
+
+<details>
+  <summary>Accuracy: 0.86</summary><p>
+  
+```
+Iteration: 0
+				Accuracy: 0.497742
+		Loss: 0.697259
+		Loss: 0.696256
+		Loss: 0.696256
+Iteration: 1000
+				Accuracy: 0.850281
+		Loss: 0.332021
+		Loss: 0.439961
+		Loss: 0.439961
+Iteration: 2000
+				Accuracy: 0.853516
+		Loss: 0.32909
+		Loss: 0.269692
+		Loss: 0.269692
+Iteration: 3000
+				Accuracy: 0.851379
+		Loss: 0.332691
+		Loss: 0.398664
+		Loss: 0.398664
+Iteration: 4000
+				Accuracy: 0.875366
+		Loss: 0.314983
+		Loss: 0.127959
+		Loss: 0.127959
+Iteration: 5000
+				Accuracy: 0.876404
+		Loss: 0.288829
+		Loss: 0.268389
+		Loss: 0.268389
+Iteration: 6000
+				Accuracy: 0.872925
+		Loss: 0.306257
+		Loss: 0.171131
+		Loss: 0.171131
+Iteration: 7000
+				Accuracy: 0.875671
+		Loss: 0.312735
+		Loss: 0.249351
+		Loss: 0.249351
+Iteration: 8000
+				Accuracy: 0.877319
+		Loss: 0.31563
+		Loss: 0.285037
+		Loss: 0.285036
+Iteration: 9000
+				Accuracy: 0.871521
+		Loss: 0.306121
+		Loss: 0.125517
+		Loss: 0.125517
+Iteration: 10000
+				Accuracy: 0.866455
+		Loss: 0.352724
+		Loss: 0.208356
+		Loss: 0.208356
+Iteration: 11000
+				Accuracy: 0.870239
+		Loss: 0.380286
+		Loss: 0.195039
+		Loss: 0.195039
+Iteration: 12000
+				Accuracy: 0.862488
+		Loss: 0.386133
+		Loss: 0.160543
+		Loss: 0.160542
+Iteration: 13000
+				Accuracy: 0.852783
+		Loss: 0.395843
+		Loss: 0.132938
+		Loss: 0.132938
+Iteration: 14000
+				Accuracy: 0.859985
+		Loss: 0.418401
+		Loss: 0.0968928
+		Loss: 0.0968927
+Iteration: 15000
+				Accuracy: 0.852112
+		Loss: 0.51566
+		Loss: 0.159831
+		Loss: 0.159831
+Iteration: 16000
+				Accuracy: 0.863403
+		Loss: 0.456039
+		Loss: 0.212659
+		Loss: 0.212659
+Iteration: 17000
+				Accuracy: 0.864624
+		Loss: 0.401947
+		Loss: 0.167202
+		Loss: 0.167202
+Iteration: 18000
+				Accuracy: 0.860229
+		Loss: 0.458565
+		Loss: 0.194184
+		Loss: 0.194184
+Iteration: 19000
+				Accuracy: 0.857483
+		Loss: 0.450797
+		Loss: 0.101896
+		Loss: 0.101895
+Iteration: 20000
+				Accuracy: 0.861084
+		Loss: 0.50147
+		Loss: 0.154803
+		Loss: 0.154803
+Iteration: 21000
+				Accuracy: 0.861511
+		Loss: 0.514846
+		Loss: 0.181858
+		Loss: 0.181857
+Iteration: 22000
+				Accuracy: 0.853516
+		Loss: 0.605593
+		Loss: 0.0150778
+		Loss: 0.0150775
+Iteration: 23000
+				Accuracy: 0.85614
+		Loss: 0.547736
+		Loss: 0.149206
+		Loss: 0.149205
+Iteration: 24000
+				Accuracy: 0.858948
+		Loss: 0.55384
+		Loss: 0.0264354
+		Loss: 0.0264353
+Iteration: 25000
+				Accuracy: 0.861206
+		Loss: 0.583243
+		Loss: 0.0411675
+		Loss: 0.0411673
+Iteration: 26000
+				Accuracy: 0.863403
+		Loss: 0.5622
+		Loss: 0.10747
+		Loss: 0.10747
+Iteration: 27000
+				Accuracy: 0.862976
+		Loss: 0.539846
+		Loss: 0.0624186
+		Loss: 0.0624183
+Iteration: 28000
+				Accuracy: 0.859436
+		Loss: 0.636788
+		Loss: 0.0853239
+		Loss: 0.0853237
+Iteration: 29000
+				Accuracy: 0.863831
+		Loss: 0.717435
+		Loss: 0.0179295
+		Loss: 0.0179294
+Iteration: 30000
+		Loss: 0.0702705
+				Accuracy: 0.864563
+		Loss: 0.707163
+```
+</p></details><br/>
+
+<details>
+  <summary>Step SGD</summary><p>
+  
+```
+net: "prototxt/train_class_net.prototxt"
+
+# training data count = 2^16
+# test data count = 2^14
+# test batch size = 2^4
+# --> test_iter = 2^10, so we cover all test data per iteration
+test_iter: 1024
+test_interval: 1000
+
+# Solver method parameters
+type: "SGD"
+momentum: 0.9
+base_lr: 0.01
+lr_policy: "step"
+gamma: 0.1
+stepsize: 7000
+max_iter: 21000
+# Multiply lr by .1 every 7K steps
+
+# Output info
+display: 1000
+
+# snapshot intermediate results
+snapshot: 5000
+snapshot_prefix: "snapshots"
+
+solver_mode: GPU
+```
+</p></details><br/>
+
+<details>
+  <summary>Accuracy: 0.86</summary><p>
+  
+```
+Iteration: 0
+				Accuracy: 0.50177
+		Loss: 0.696492
+		Loss: 0.691293
+		Loss: 0.691293
+Iteration: 1000
+				Accuracy: 0.701172
+		Loss: 0.532814
+		Loss: 0.559229
+		Loss: 0.559229
+Iteration: 2000
+				Accuracy: 0.738586
+		Loss: 0.515954
+		Loss: 0.599992
+		Loss: 0.599992
+Iteration: 3000
+				Accuracy: 0.748413
+		Loss: 0.527863
+		Loss: 0.5658
+		Loss: 0.565801
+Iteration: 4000
+				Accuracy: 0.726746
+		Loss: 0.511349
+		Loss: 0.504304
+		Loss: 0.504304
+Iteration: 5000
+				Accuracy: 0.764771
+		Loss: 0.494923
+		Loss: 0.462972
+		Loss: 0.462972
+Iteration: 6000
+				Accuracy: 0.673767
+		Loss: 0.536274
+		Loss: 0.555797
+		Loss: 0.555797
+Iteration: 7000
+				Accuracy: 0.672424
+		Loss: 0.545039
+		Loss: 0.464622
+		Loss: 0.464622
+Iteration: 8000
+				Accuracy: 0.705566
+		Loss: 0.531716
+		Loss: 0.442604
+		Loss: 0.442604
+Iteration: 9000
+				Accuracy: 0.673645
+		Loss: 0.555645
+		Loss: 0.502417
+		Loss: 0.502417
+Iteration: 10000
+				Accuracy: 0.631897
+		Loss: 0.579053
+		Loss: 0.551493
+		Loss: 0.551493
+Iteration: 11000
+				Accuracy: 0.73761
+		Loss: 0.478255
+		Loss: 0.543852
+		Loss: 0.543852
+Iteration: 12000
+				Accuracy: 0.788574
+		Loss: 0.429761
+		Loss: 0.389201
+		Loss: 0.389201
+Iteration: 13000
+				Accuracy: 0.838318
+		Loss: 0.362347
+		Loss: 0.389412
+		Loss: 0.389412
+Iteration: 14000
+				Accuracy: 0.834473
+		Loss: 0.371198
+		Loss: 0.23972
+		Loss: 0.23972
+Iteration: 15000
+				Accuracy: 0.841858
+		Loss: 0.35634
+		Loss: 0.245442
+		Loss: 0.245442
+Iteration: 16000
+				Accuracy: 0.85022
+		Loss: 0.347115
+		Loss: 0.324885
+		Loss: 0.324885
+Iteration: 17000
+				Accuracy: 0.848511
+		Loss: 0.351375
+		Loss: 0.42697
+		Loss: 0.42697
+Iteration: 18000
+				Accuracy: 0.827576
+		Loss: 0.374017
+		Loss: 0.370106
+		Loss: 0.370106
+Iteration: 19000
+				Accuracy: 0.85144
+		Loss: 0.344632
+		Loss: 0.241066
+		Loss: 0.241066
+Iteration: 20000
+				Accuracy: 0.853455
+		Loss: 0.345163
+		Loss: 0.341853
+		Loss: 0.341853
+Iteration: 21000
+				Accuracy: 0.854309
+		Loss: 0.339767
+		Loss: 0.346573
+		Loss: 0.346573
+Iteration: 22000
+				Accuracy: 0.85553
+		Loss: 0.335848
+		Loss: 0.280553
+		Loss: 0.280553
+Iteration: 23000
+				Accuracy: 0.855652
+		Loss: 0.335202
+		Loss: 0.302192
+		Loss: 0.302192
+Iteration: 24000
+				Accuracy: 0.854858
+		Loss: 0.335943
+		Loss: 0.403914
+		Loss: 0.403914
+Iteration: 25000
+				Accuracy: 0.857422
+		Loss: 0.334265
+		Loss: 0.249807
+		Loss: 0.249807
+Iteration: 26000
+				Accuracy: 0.857544
+		Loss: 0.333048
+		Loss: 0.241089
+		Loss: 0.241089
+Iteration: 27000
+				Accuracy: 0.858459
+		Loss: 0.332014
+		Loss: 0.214851
+		Loss: 0.214851
+Iteration: 28000
+				Accuracy: 0.856567
+		Loss: 0.332509
+		Loss: 0.329776
+		Loss: 0.329776
+Iteration: 29000
+				Accuracy: 0.858643
+		Loss: 0.333183
+		Loss: 0.293083
+		Loss: 0.293083
+Iteration: 30000
+		Loss: 0.207623
+				Accuracy: 0.859131
+		Loss: 0.332896
+```
+</p></details><br/>
